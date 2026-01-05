@@ -26,9 +26,9 @@ def analyze_pgn_file(pgn_filename: str | None):
 
     for ply_idx, move in enumerate(moves, start=1):
         fen_before = board.fen()
-        # eval best line vs played move
+        
         best_san = best_move_san(fen_before, movetime_ms=200) or ""
-        cp_before = analyse_fen_cp(fen_before, depth=8)  # quick depth for UI
+        cp_before = analyse_fen_cp(fen_before, depth=8)  
 
         try:
             played_san = board.san(move)
@@ -38,7 +38,7 @@ def analyze_pgn_file(pgn_filename: str | None):
         fen_after = board.fen()
         cp_after = analyse_fen_cp(fen_after, depth=8)
 
-        cpl = (cp_before - cp_after) if board.turn else (cp_after - cp_before)  # relative loss approx
+        cpl = (cp_before - cp_after) if board.turn else (cp_after - cp_before) 
         cpl = abs(cpl)
         total_cpl += max(0, cpl)
 
@@ -60,7 +60,7 @@ def analyze_pgn_file(pgn_filename: str | None):
         })
 
     avg_cpl = int(total_cpl / max(1, len(moves)))
-    # Rough “accuracy” proxy (lower CPL → higher accuracy). Calibrate later.
+    
     accuracy = max(0, min(100, 100 - avg_cpl/10))
 
     return {

@@ -5,3 +5,6 @@ python-chess
 torch
 pandas
 numpy
+requests
+python-dotenv
+google-genai

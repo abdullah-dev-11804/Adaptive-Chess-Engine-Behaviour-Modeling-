@@ -9,7 +9,7 @@ function TrainModel() {
     setStatus("Fine-tuning Maia-2 model...");
     setProgress(0);
 
-    // Fake progress bar
+    // for demo purposes before proper fine tuned model integeration
     let interval = setInterval(() => {
       setProgress((old) => {
         if (old >= 100) {

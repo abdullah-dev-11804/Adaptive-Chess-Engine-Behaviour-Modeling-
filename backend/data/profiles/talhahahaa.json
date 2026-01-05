@@ -1,0 +1,129 @@
+{
+  "username": "talhahahaa",
+  "games_analyzed": 200,
+  "avg_cpl": 59.74,
+  "inaccuracy_rate": 0.1316,
+  "mistake_rate": 0.094,
+  "blunder_rate": 0.0789,
+  "weak_phase": "middlegame",
+  "opening_preferences": [
+    "B01",
+    "C20",
+    "B00",
+    "D00",
+    "A00"
+  ],
+  "style": {
+    "aggressive": false,
+    "early_queen": true,
+    "late_castling": true
+  },
+  "phase_breakdown": {
+    "opening_avg_cpl": 49.97,
+    "middlegame_avg_cpl": 77.96,
+    "endgame_avg_cpl": 51.38,
+    "weak_phase": "middlegame"
+  },
+  "profile_proofs": [
+    {
+      "fen": "r1b1k1r1/ppp2p2/7p/4B3/3P4/2P5/P1P1KPqP/R2Q3R b q - 1 15",
+      "played_move": "g2e4",
+      "best_move": null,
+      "cpl": 300,
+      "phase": "middlegame",
+      "label": "blunder",
+      "opening": "C55",
+      "move_number": 16
+    },
+    {
+      "fen": "r3k1r1/ppp2p2/7p/4B3/3Pq1b1/2P5/P1PK1P1P/R3Q2R b q - 5 17",
+      "played_move": "e4f4",
+      "best_move": null,
+      "cpl": 300,
+      "phase": "middlegame",
+      "label": "blunder",
+      "opening": "C55",
+      "move_number": 18
+    },
+    {
+      "fen": "rnb1kbnr/pp3qpp/2pp4/4p1B1/4P3/2N2N2/PPP2PPP/R2QKB1R w KQkq - 2 8",
+      "played_move": "d1d6",
+      "best_move": null,
+      "cpl": 300,
+      "phase": "opening",
+      "label": "blunder",
+      "opening": "C25",
+      "move_number": 8
+    },
+    {
+      "fen": "2kr1b1r/pppqpppp/2n1bn2/8/1P2P1P1/2PP3P/P7/RNBQKBNR b KQ - 0 8",
+      "played_move": "d7d3",
+      "best_move": null,
+      "cpl": 300,
+      "phase": "opening",
+      "label": "blunder",
+      "opening": "A00",
+      "move_number": 9
+    },
+    {
+      "fen": "r1bqkb1r/2pp1ppp/p1n2n2/1p2N3/8/1B6/PPPP1PPP/RNBQR1K1 b kq - 0 8",
+      "played_move": "f8e7",
+      "best_move": null,
+      "cpl": 300,
+      "phase": "opening",
+      "label": "blunder",
+      "opening": "C78",
+      "move_number": 9
+    },
+    {
+      "fen": "4rk2/5ppp/3p4/2pP4/3B4/3Q2P1/r4P1P/4b1K1 w - c6 0 27",
+      "played_move": "d4c3",
+      "best_move": null,
+      "cpl": 300,
+      "phase": "middlegame",
+      "label": "blunder",
+      "opening": "C41",
+      "move_number": 27
+    },
+    {
+      "fen": "r1bqkb1r/ppp3pp/5p1n/4p3/4P3/2NPBQ2/PP3PPP/R3K1NR b KQkq - 0 9",
+      "played_move": "d8d3",
+      "best_move": null,
+      "cpl": 300,
+      "phase": "middlegame",
+      "label": "blunder",
+      "opening": "C20",
+      "move_number": 10
+    },
+    {
+      "fen": "r1b1kb1r/ppp3pp/5p1n/3Np3/4P3/3qBQ2/PP3PPP/R3K1NR b KQkq - 1 10",
+      "played_move": "c8e6",
+      "best_move": null,
+      "cpl": 300,
+      "phase": "middlegame",
+      "label": "blunder",
+      "opening": "C20",
+      "move_number": 11
+    },
+    {
+      "fen": "r3kb1r/ppN3pp/4bp1n/4p3/4P3/3qBQ2/PP3PPP/R3K1NR b KQkq - 0 11",
+      "played_move": "e8d8",
+      "best_move": null,
+      "cpl": 300,
+      "phase": "middlegame",
+      "label": "blunder",
+      "opening": "C20",
+      "move_number": 12
+    },
+    {
+      "fen": "N2k3r/pp4pp/5p1n/4p3/1b2P3/8/PP1qQPPP/R4K1R b - - 0 16",
+      "played_move": "d8e7",
+      "best_move": null,
+      "cpl": 300,
+      "phase": "middlegame",
+      "label": "blunder",
+      "opening": "C20",
+      "move_number": 17
+    }
+  ]
+}

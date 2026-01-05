@@ -27,3 +27,35 @@ export const analyzeAndStore = async () => {
 export const listAnalyses = async () => {
   return await axios.get(`${API_BASE}/analysis/analyses`);
 };
+
+export const fetchChessComGames = async (username) => {
+  return await axios.post(`${API_BASE}/games/fetch/chesscom`, {
+    username: username.trim(),
+  });
+};
+
+export const getProfile = async (username) => {
+  return await axios.get(`${API_BASE}/profile/${username}`);
+};
+
+export const getFeedback = async (username) => {
+  return await axios.get(`${API_BASE}/feedback/${username}`);
+};
+
+
+export const analyzeMove = async (payload) => {
+  return await axios.post(`${API_BASE}/analyze/move`, payload);
+};
+
+
+export const listPgnGames = async (username, limit = 20) => {
+  return await axios.get(`${API_BASE}/games/pgn/${username}/games`, {
+    params: { limit },
+  });
+};
+
+export const getPgnGameMoves = async (username, index) => {
+  return await axios.get(`${API_BASE}/games/pgn/${username}/moves`, {
+    params: { index },
+  });
+};

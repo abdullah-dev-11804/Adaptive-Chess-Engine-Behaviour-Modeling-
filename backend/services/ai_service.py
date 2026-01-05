@@ -1,9 +1,9 @@
 import chess, random, time
 from .engine_service import best_move_san
 def train_model(user_id: str):
-    # Simulate training delay
+
     time.sleep(5)
-    # Save dummy model file
+
     with open(f"saved_models/{user_id}_model.txt", "w") as f:
         f.write("Pretend Maia-2 fine-tuned weights")
     return {"status": "success", "message": "Model fine-tuning completed (simulated)."}
