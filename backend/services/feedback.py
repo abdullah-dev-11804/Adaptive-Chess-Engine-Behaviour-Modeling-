@@ -70,3 +70,64 @@ RULES:
         return text.strip() if text else _missing_key_message()
     except Exception:
         return _missing_key_message()
+
+
+def generate_live_explanation(profile: dict, analysis: dict, fen: str, move_uci: str) -> str:
+    """
+    Generates optional deeper explanation for a live move using engine lines.
+    """
+
+    style = profile.get("style", {}) if profile else {}
+    best_line = " ".join(analysis.get("best_line", []) or [])
+    played_line = " ".join(analysis.get("played_line", []) or [])
+
+    prompt = f"""
+You are a chess coach explaining a single move to a human player.
+
+PLAYER PROFILE:
+- Average CPL: {profile.get('avg_cpl')}
+- Weak phase: {profile.get('weak_phase')}
+- Style:
+  - Early queen moves: {style.get('early_queen')}
+  - Late castling: {style.get('late_castling')}
+  - Aggressive: {style.get('aggressive')}
+
+MOVE CONTEXT:
+- FEN: {fen}
+- Played move (UCI): {move_uci}
+- CPL: {analysis.get('cpl')}
+- Label: {analysis.get('label')}
+- Phase: {analysis.get('phase')}
+- Matches known weakness: {analysis.get('matches_profile_weakness')}
+
+ENGINE LINES:
+- Best move: {analysis.get('best_move')}
+- Best line: {best_line}
+- Played line: {played_line}
+- Eval best: {analysis.get('eval_best')}
+- Eval played: {analysis.get('eval_played')}
+
+TASK:
+Explain in 3-5 sentences:
+1) What the played move allows or misses (use the played line).
+2) What the best move aims for instead (use the best line).
+3) One actionable habit tied to the player's profile weakness.
+
+RULES:
+- Do NOT mention Stockfish or engines.
+- Keep it concise and encouraging.
+"""
+
+    client = _get_client()
+    if not client:
+        return _missing_key_message()
+
+    try:
+        response = client.models.generate_content(
+            model=MODEL_NAME,
+            contents=prompt,
+        )
+        text = getattr(response, "text", None)
+        return text.strip() if text else _missing_key_message()
+    except Exception:
+        return _missing_key_message()

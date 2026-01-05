@@ -59,3 +59,11 @@ export const getPgnGameMoves = async (username, index) => {
     params: { index },
   });
 };
+
+export const analyzeMoveDeep = async (payload) => {
+  return await axios.post(`${API_BASE}/analyze/move/deep`, payload);
+};
+
+export const explainMove = async (payload) => {
+  return await axios.post(`${API_BASE}/analyze/explain/move`, payload);
+};

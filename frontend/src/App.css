@@ -501,6 +501,39 @@ select {
   gap: 12px;
 }
 
+.deep-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.deep-card {
+  background: #10131a;
+  border-radius: 14px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  display: grid;
+  gap: 10px;
+}
+
+.deep-lines p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.deep-eval {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.deep-explain {
+  margin: 0;
+}
+
 .suggested-list h4 {
   margin: 0;
   font-size: 14px;

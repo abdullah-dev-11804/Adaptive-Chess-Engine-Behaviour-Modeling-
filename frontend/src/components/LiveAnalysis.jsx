@@ -3,6 +3,8 @@ import { Chessboard } from "react-chessboard";
 import { Chess } from "chess.js";
 import {
   analyzeMove,
+  analyzeMoveDeep,
+  explainMove,
   predictMove,
   listPgnGames,
   getPgnGameMoves,
@@ -27,6 +29,11 @@ export default function LiveAnalysis({ username, startFen }) {
   const [reviewMoveIndex, setReviewMoveIndex] = useState(0);
   const [reviewResult, setReviewResult] = useState(null);
 
+  const [deepStatus, setDeepStatus] = useState("");
+  const [deepResult, setDeepResult] = useState(null);
+  const [deepExplanation, setDeepExplanation] = useState("");
+  const [deepContext, setDeepContext] = useState(null);
+
   const [debugLogs, setDebugLogs] = useState([]);
 
   const addDebug = (message) => {
@@ -36,6 +43,13 @@ export default function LiveAnalysis({ username, startFen }) {
 
   const clearDebug = () => {
     setDebugLogs([]);
+  };
+
+  const resetDeep = () => {
+    setDeepStatus("");
+    setDeepResult(null);
+    setDeepExplanation("");
+    setDeepContext(null);
   };
 
   const uciToMove = (uci) => {
@@ -55,6 +69,7 @@ export default function LiveAnalysis({ username, startFen }) {
     setLiveFen(game.fen());
     setLiveStatus("");
     setLiveResult(null);
+    resetDeep();
     addDebug("Live: board reset.");
   };
 
@@ -76,6 +91,10 @@ export default function LiveAnalysis({ username, startFen }) {
     setLiveResult(null);
 
     const moveUci = `${move.from}${move.to}${move.promotion || ""}`;
+    setDeepContext({ fen: fenBefore, move: moveUci });
+    setDeepResult(null);
+    setDeepExplanation("");
+    setDeepStatus("");
     const cleanUsername = username.trim();
 
     const processLiveMove = async () => {
@@ -170,6 +189,7 @@ export default function LiveAnalysis({ username, startFen }) {
       setReviewFen(game.fen());
       setReviewMoveIndex(0);
       setReviewResult(null);
+      resetDeep();
       setReviewStatus("");
       addDebug(`Review: loaded game ${index + 1} with ${res.data?.moves?.length || 0} moves.`);
     } catch (err) {
@@ -186,6 +206,7 @@ export default function LiveAnalysis({ username, startFen }) {
     setReviewMoveIndex(reviewMoveIndex - 1);
     setReviewFen(game.fen());
     setReviewResult(null);
+    resetDeep();
     setReviewStatus("");
     addDebug("Review: step back one move.");
   };
@@ -217,10 +238,16 @@ export default function LiveAnalysis({ username, startFen }) {
 
     if (!shouldAnalyze) {
       setReviewResult(null);
+      resetDeep();
       setReviewStatus("");
       addDebug("Review: skipping opponent move.");
       return;
     }
+
+    setDeepContext({ fen: fenBefore, move: moveUci });
+    setDeepResult(null);
+    setDeepExplanation("");
+    setDeepStatus("");
 
     const cleanUsername = username.trim();
     if (!cleanUsername) {
@@ -247,19 +274,59 @@ export default function LiveAnalysis({ username, startFen }) {
     }
   };
 
+  const handleDeepAnalysis = async (useAi) => {
+    if (!deepContext) {
+      setDeepStatus("Make a move to analyze.");
+      return;
+    }
+    const cleanUsername = username.trim();
+    if (!cleanUsername) {
+      setDeepStatus("Enter a username to analyze moves.");
+      return;
+    }
+    setDeepStatus(useAi ? "Requesting AI explanation..." : "Running deep analysis...");
+    setDeepExplanation("");
+
+    try {
+      if (useAi) {
+        const res = await explainMove({
+          username: cleanUsername,
+          fen: deepContext.fen,
+          move: deepContext.move,
+        });
+        setDeepResult(res.data?.analysis || null);
+        setDeepExplanation(res.data?.explanation || "");
+        addDebug("Deep: AI explanation generated.");
+      } else {
+        const res = await analyzeMoveDeep({
+          username: cleanUsername,
+          fen: deepContext.fen,
+          move: deepContext.move,
+        });
+        setDeepResult(res.data || null);
+        addDebug("Deep: analysis complete.");
+      }
+      setDeepStatus("");
+    } catch (err) {
+      const detail = err?.response?.data?.detail;
+      setDeepStatus(detail ? `Deep analysis failed: ${detail}` : "Deep analysis failed.");
+      addDebug(`Deep: failed (${detail || "unknown error"}).`);
+    }
+  };
+
   return (
     <div className="live">
       <section className="panel live-panel">
         <div className="live-toggle">
           <button
             className={liveMode === "play" ? "primary" : "ghost"}
-            onClick={() => setLiveMode("play")}
+            onClick={() => { setLiveMode("play"); resetDeep(); }}
           >
             Play & Analyze
           </button>
           <button
             className={liveMode === "review" ? "primary" : "ghost"}
-            onClick={() => setLiveMode("review")}
+            onClick={() => { setLiveMode("review"); resetDeep(); }}
           >
             Review past game
           </button>
@@ -320,6 +387,38 @@ export default function LiveAnalysis({ username, startFen }) {
                     </div>
                   </div>
                   {liveResult.feedback && <p>{liveResult.feedback}</p>}
+                  <div className="deep-actions">
+                    <button className="ghost" onClick={() => handleDeepAnalysis(false)}>
+                      Deep analysis
+                    </button>
+                    <button className="primary" onClick={() => handleDeepAnalysis(true)}>
+                      Explain this move (AI)
+                    </button>
+                  </div>
+                  {deepStatus && <p className="status">{deepStatus}</p>}
+                  {deepResult && (
+                    <div className="deep-card">
+                      <div className="deep-lines">
+                        <p>
+                          <strong>Best move:</strong> {deepResult.best_move || "n/a"}
+                        </p>
+                        <p>
+                          <strong>Best line:</strong>{" "}
+                          {(deepResult.best_line || []).join(" ") || "n/a"}
+                        </p>
+                        <p>
+                          <strong>Played line:</strong>{" "}
+                          {(deepResult.played_line || []).join(" ") || "n/a"}
+                        </p>
+                      </div>
+                      <div className="deep-eval">
+                        <span>Eval best: {deepResult.eval_best}</span>
+                        <span>Eval played: {deepResult.eval_played}</span>
+                        <span>Delta: {deepResult.eval_delta}</span>
+                      </div>
+                      {deepExplanation && <p className="deep-explain">{deepExplanation}</p>}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -422,6 +521,38 @@ export default function LiveAnalysis({ username, startFen }) {
                     </div>
                   </div>
                   {reviewResult.feedback && <p>{reviewResult.feedback}</p>}
+                  <div className="deep-actions">
+                    <button className="ghost" onClick={() => handleDeepAnalysis(false)}>
+                      Deep analysis
+                    </button>
+                    <button className="primary" onClick={() => handleDeepAnalysis(true)}>
+                      Explain this move (AI)
+                    </button>
+                  </div>
+                  {deepStatus && <p className="status">{deepStatus}</p>}
+                  {deepResult && (
+                    <div className="deep-card">
+                      <div className="deep-lines">
+                        <p>
+                          <strong>Best move:</strong> {deepResult.best_move || "n/a"}
+                        </p>
+                        <p>
+                          <strong>Best line:</strong>{" "}
+                          {(deepResult.best_line || []).join(" ") || "n/a"}
+                        </p>
+                        <p>
+                          <strong>Played line:</strong>{" "}
+                          {(deepResult.played_line || []).join(" ") || "n/a"}
+                        </p>
+                      </div>
+                      <div className="deep-eval">
+                        <span>Eval best: {deepResult.eval_best}</span>
+                        <span>Eval played: {deepResult.eval_played}</span>
+                        <span>Delta: {deepResult.eval_delta}</span>
+                      </div>
+                      {deepExplanation && <p className="deep-explain">{deepExplanation}</p>}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
