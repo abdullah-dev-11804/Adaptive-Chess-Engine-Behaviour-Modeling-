@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from google import genai
 
-MODEL_NAME = "gemini-2.0-flash"  # fast, free-tier friendly
+MODEL_NAME = "gemini-2.0-flash"
 
 
 def _get_client():

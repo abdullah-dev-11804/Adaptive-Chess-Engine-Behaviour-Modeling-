@@ -18,7 +18,7 @@ from services.profiling import (
 
 def _score_cp(engine: chess.engine.SimpleEngine, board: chess.Board, depth: int) -> Optional[int]:
     info = engine.analyse(board, chess.engine.Limit(depth=depth))
-    score = info["score"].pov(board.turn)
+    score = info["score"].pov(chess.WHITE)
     cp = score.score(mate_score=100000)
     return int(cp) if cp is not None else None
 
@@ -46,48 +46,21 @@ def _load_profile(username: str) -> Optional[Dict]:
         return json.load(f)
 
 
-def _score_move(board: chess.Board, move: chess.Move) -> float:
-    score = 0.0
-
-    if board.is_capture(move):
-        score += 3.0
-    if board.gives_check(move):
-        score += 2.0
-    if board.is_castling(move):
-        score += 2.0
-
-    piece = board.piece_at(move.from_square)
-    if piece:
-        fullmove = board.fullmove_number
-        if fullmove <= 6 and piece.piece_type in (chess.KNIGHT, chess.BISHOP):
-            score += 2.0
-        if fullmove <= 6 and piece.piece_type == chess.QUEEN:
-            score -= 1.5
-
-        if piece.piece_type == chess.PAWN:
-            if move.to_square in (
-                chess.E4,
-                chess.D4,
-                chess.C4,
-                chess.E5,
-                chess.D5,
-                chess.C5,
-            ):
-                score += 2.0
-
-    if not board.is_capture(move) and not board.gives_check(move):
-        score += 0.3
-
-    return score
-
-
-def _suggested_good_moves(fen: str, top_k: int = 5) -> List[str]:
+def _suggested_good_moves(engine: chess.engine.SimpleEngine, fen: str, depth: int = 10, top_k: int = 5) -> List[str]:
     board = chess.Board(fen)
-    scored = []
-    for move in board.legal_moves:
-        scored.append((move.uci(), _score_move(board, move)))
-    scored.sort(key=lambda x: x[1], reverse=True)
-    return [move for move, _score in scored[:top_k]]
+    infos = engine.analyse(board, chess.engine.Limit(depth=depth), multipv=top_k)
+    moves = []
+    for info in infos:
+        pv = info.get("pv")
+        if pv:
+            moves.append(pv[0].uci())
+    seen = set()
+    out = []
+    for move in moves:
+        if move not in seen:
+            seen.add(move)
+            out.append(move)
+    return out[:top_k]
 
 
 def analyze_move(
@@ -98,23 +71,24 @@ def analyze_move(
     username: str,
     depth: int = 10,
 ) -> Dict:
-    board = chess.Board(fen)
+    board_before = chess.Board(fen)
     try:
         move = chess.Move.from_uci(move_uci)
     except ValueError:
         raise ValueError("Invalid UCI move")
 
-    if move not in board.legal_moves:
+    if move not in board_before.legal_moves:
         raise ValueError("Illegal move for this position")
 
-    fullmove_before = board.fullmove_number
-    before_cp = _score_cp(engine, board, depth)
+    fullmove_before = board_before.fullmove_number
+    before_cp = _score_cp(engine, board_before, depth)
     if before_cp is None:
         raise RuntimeError("Stockfish evaluation failed (before)")
 
-    player_color = board.turn
-    board.push(move)
-    after_cp = _score_cp(engine, board, depth)
+    player_color = board_before.turn
+    board_after = board_before.copy()
+    board_after.push(move)
+    after_cp = _score_cp(engine, board_after, depth)
     if after_cp is None:
         raise RuntimeError("Stockfish evaluation failed (after)")
 
@@ -133,7 +107,7 @@ def analyze_move(
 
     # Profile weakness check (phase + label against profile).
     ply_index = (fullmove_before - 1) * 2 + (1 if player_color == chess.WHITE else 2)
-    phase = classify_phase(board, ply_index)
+    phase = classify_phase(board_after, ply_index)
     profile = _load_profile(username)
     matches_profile_weakness = False
     if profile:
@@ -141,7 +115,7 @@ def analyze_move(
         if weak_phase == phase and label in {"mistake", "blunder"}:
             matches_profile_weakness = True
 
-    suggested_good_moves = _suggested_good_moves(fen)
+    suggested_good_moves = _suggested_good_moves(engine, fen, depth=depth, top_k=5)
 
     feedback = None
     if label in {"mistake", "blunder"}:

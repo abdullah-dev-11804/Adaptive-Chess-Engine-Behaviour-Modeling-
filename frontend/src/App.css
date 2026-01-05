@@ -347,10 +347,12 @@ select {
   align-content: start;
   align-self: start;
   border: 1px solid var(--border);
+  position: sticky;
+  top: 0px;
 }
 
 .board-sticky {
-  position: sticky;
+  /* position: sticky; */
   top: 20px;
   display: grid;
   gap: 12px;
@@ -488,6 +490,7 @@ select {
   border-radius: 16px;
   padding: 16px;
   display: grid;
+  margin-top: 185px;
   gap: 12px;
   border: 1px solid var(--border);
   align-content: start;
@@ -560,7 +563,4 @@ select {
     grid-template-columns: 1fr;
   }
 
-  .board-sticky {
-    position: static;
-  }
 }
